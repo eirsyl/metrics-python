@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.20](https://github.com/eirsyl/metrics-python/compare/0.0.19...0.0.20) (2024-07-16)
+
+
+### Bug Fixes
+
+* Release using make ([#10](https://github.com/eirsyl/metrics-python/issues/10)) ([4db9dad](https://github.com/eirsyl/metrics-python/commit/4db9dad135e67c941f8f5473c559e7fc87bbe945))
+
 ## [0.0.19](https://github.com/eirsyl/metrics-python/compare/0.0.18...0.0.19) (2024-07-16)
 
 
