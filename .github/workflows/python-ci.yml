@@ -20,10 +20,12 @@ jobs:
     name: ${{ matrix.name }}
     runs-on: ubuntu-22.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup Python project
         uses: ./.github/actions/setup-python
         with:
-          checkout: true
           tool-versions-path: .tool-versions
 
       - name: Run linter
@@ -33,10 +35,12 @@ jobs:
     name: "Python tests: pytest"
     runs-on: ubuntu-22.04
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup Python project
         uses: ./.github/actions/setup-python
         with:
-          checkout: true
           tool-versions-path: .tool-versions
 
       - name: Run pytest
