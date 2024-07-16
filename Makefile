@@ -88,6 +88,10 @@ fix-ruff: .venv | $(BASE) ; $(info $(M) running ruff…) @ ## Run ruff fixer
 	$Q cd $(BASE) && $(POETRY) install
 	@touch $@
 
+.PHONY: release
+release: .venv | $(BASE) ; $(info $(M) releasing package…) @ ## Release package
+	$Q cd $(BASE) && $(POETRY) publish --build --username=__token__ --password=$(PYPI_TOKEN)
+
 # Misc
 
 .PHONY: clean

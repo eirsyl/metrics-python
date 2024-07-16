@@ -31,4 +31,4 @@ jobs:
         run: make test
 
       - name: Poetry publish
-        run: poetry publish --build --username=__token__ --password=$(PYPI_TOKEN)
+        run: make release
