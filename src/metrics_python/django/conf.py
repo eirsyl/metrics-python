@@ -22,21 +22,5 @@ class Settings:
             )
         )
 
-    @property
-    def PUSHGATEWAY(self) -> str | None:
-        return getattr(
-            django_settings,
-            "METRICS_PYTHON_PUSHGATEWAY",
-            None,
-        )
-
-    @property
-    def JOB(self) -> str | None:
-        return getattr(
-            django_settings,
-            "METRICS_PYTHON_JOB",
-            None,
-        )
-
 
 settings = Settings()
