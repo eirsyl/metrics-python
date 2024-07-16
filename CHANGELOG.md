@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.1.0](https://github.com/eirsyl/metrics-python/compare/0.0.20...0.1.0) (2024-07-16)
+
+
+### ⚠ BREAKING CHANGES
+
+* Remove periodic task monitoring ([#12](https://github.com/eirsyl/metrics-python/issues/12))
+
+### Features
+
+* Remove periodic task monitoring ([#12](https://github.com/eirsyl/metrics-python/issues/12)) ([6efb7a0](https://github.com/eirsyl/metrics-python/commit/6efb7a0caf46a98e76d23d364a68e9ba7cb8946e))
+
 ## [0.0.20](https://github.com/eirsyl/metrics-python/compare/0.0.19...0.0.20) (2024-07-16)
 
 
