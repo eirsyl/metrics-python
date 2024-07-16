@@ -1,13 +1,16 @@
 name: metrics-python Release
 
 on:
-  push:
-    tags:
-      - "metrics-python/v*"
+  workflow_dispatch:
+  release:
+    types: [published]
 
 permissions:
   id-token: write
   contents: read
+
+env:
+  PYPI_TOKEN: "${{ secrets.PYPI_TOKEN }}"
 
 jobs:
   release:
@@ -29,3 +32,6 @@ jobs:
 
       - name: Poetry build
         run: poetry build
+
+      - name: Poetry publish
+        run: poetry publish
