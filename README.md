@@ -171,3 +171,7 @@ def post_request(worker: Any, req: Any, environ: Any, resp: Any) -> None:
 def post_fork(server: Any, worker: Any) -> None:
     export_worker_busy_state(worker_type="gunicorn", busy=False)
 ```
+
+## Release new version
+
+We use release-please from Google to relese new versions, this is done automatically.
