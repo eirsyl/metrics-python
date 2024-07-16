@@ -2,14 +2,21 @@
 
 > Generic set of metrics for Python applications.
 
-We collect metrics utils in this package to hopefully make a generic package we
-can use in other projects in the future.
-
 ## Labels
 
 Common labels like app, env, cluster, component, role, etc. is added to the
 metrics using the scrape config. Adding these metrics is not a responsibility we
 have in the metrics-python package.
+
+## Monitoring of periodic and cron jobs
+
+**metrics-python** is a utility library that leverages the **prometheus-client** to gather and present metrics for Prometheus. As Prometheus operates on a pull-based model rather than a push-based one, collecting metrics from short-lived jobs can be problematic.
+
+While the push-gateway component addresses this issue, it comes with its own set of drawbacks.
+
+Monitoring cron jobs using Prometheus and AlertManager poses additional challenges due to the inability to interpret cron expressions in PromQL.
+
+As a result, **metrics-python** does not support periodic or cron job monitoring.
 
 ## Application info
 
