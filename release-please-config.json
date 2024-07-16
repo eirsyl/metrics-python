@@ -1,0 +1,15 @@
+{
+  "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
+  "bootstrap-sha": "79914a79091503422312509c7c6f0d0a51491156",
+  "include-v-in-tag": false,
+  "separate-pull-requests": true,
+  "prerelease": true,
+  "packages": {
+    ".": {
+      "component": "metrics-python",
+      "bump-minor-pre-major": true,
+      "include-component-in-tag": false,
+      "release-type": "python"
+    }
+  }
+}
