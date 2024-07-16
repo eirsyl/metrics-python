@@ -4,10 +4,8 @@ from typing import Any
 
 from django.utils import timezone
 
-from metrics_python.generics.heartbeats import HeartbeatState, capture_checkin
-
 from ..generics.workers import export_worker_busy_state
-from ._constants import BEAT_TASK_HEADER, TASK_HEADERS, TASK_PUBLISH_TIME_HEADER
+from ._constants import TASK_HEADERS, TASK_PUBLISH_TIME_HEADER
 from ._metrics import (
     TASK_EXECUTION_DELAY,
     TASK_EXECUTION_DURATION,
@@ -120,62 +118,3 @@ def task_postrun(sender: Any, **kwargs: Any) -> None:
     TASK_LAST_EXECUTION.labels(
         task=sender.name, queue=queue, state=state
     ).set_to_current_time()
-
-
-#
-# Heartbeats
-#
-
-
-def crons_task_success(sender: Any, **kwargs: Any) -> None:
-    headers = _get_headers(sender)
-    metrics_python_headers = headers.get(TASK_HEADERS, {})
-    if not metrics_python_headers.get(BEAT_TASK_HEADER, False):
-        return
-
-    # Set the task execution duration
-    task_started_time = getattr(sender, "__metrics_python_start_time", None)
-
-    duration: float | None = None
-    if task_started_time:
-        duration = time.perf_counter() - task_started_time
-
-    capture_checkin(
-        name=sender.name, state=HeartbeatState.OK, duration_seconds=duration
-    )
-
-
-def crons_task_failure(sender: Any, **kwargs: Any) -> None:
-    headers = _get_headers(sender)
-    metrics_python_headers = headers.get(TASK_HEADERS, {})
-    if not metrics_python_headers.get(BEAT_TASK_HEADER, False):
-        return
-
-    # Set the task execution duration
-    task_started_time = getattr(sender, "__metrics_python_start_time", None)
-
-    duration: float | None = None
-    if task_started_time:
-        duration = time.perf_counter() - task_started_time
-
-    capture_checkin(
-        name=sender.name, state=HeartbeatState.ERROR, duration_seconds=duration
-    )
-
-
-def crons_task_retry(sender: Any, **kwargs: Any) -> None:
-    headers = _get_headers(sender)
-    metrics_python_headers = headers.get(TASK_HEADERS, {})
-    if not metrics_python_headers.get(BEAT_TASK_HEADER, False):
-        return
-
-    # Set the task execution duration
-    task_started_time = getattr(sender, "__metrics_python_start_time", None)
-
-    duration: float | None = None
-    if task_started_time:
-        duration = time.perf_counter() - task_started_time
-
-    capture_checkin(
-        name=sender.name, state=HeartbeatState.ERROR, duration_seconds=duration
-    )
