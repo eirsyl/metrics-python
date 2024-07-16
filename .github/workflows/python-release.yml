@@ -13,10 +13,12 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Setup Python project
         uses: ./.github/actions/setup-python
         with:
-          checkout: true
           tool-versions-path: .tool-versions
 
       - name: Run lint

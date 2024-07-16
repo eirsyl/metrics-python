@@ -37,12 +37,6 @@ inputs:
       .tool-versions by default.
     required: false
     default: ".tool-versions"
-  checkout:
-    description: |
-      Checkout repo if needed by setting to 'true'.
-      Default is false.
-    required: false
-    default: "false"
 
 outputs:
   python-version:
@@ -67,10 +61,6 @@ outputs:
 runs:
   using: composite
   steps:
-    - name: Checkout
-      uses: actions/checkout@v4
-      if: ${{ inputs.checkout == 'true' }}
-
     - name: Read .tool-versions
       uses: marocchino/tool-versions-action@v1
       if: ${{ inputs.poetry-version == '' || inputs.python-version == '' }}
