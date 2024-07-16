@@ -1,0 +1,29 @@
+name: metrics-python Release
+
+on:
+  push:
+    tags:
+      - "metrics-python/v*"
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Python project
+        uses: ./.github/actions/setup-python
+        with:
+          checkout: true
+          tool-versions-path: .tool-versions
+
+      - name: Run lint
+        run: make lint
+
+      - name: Run test
+        run: make test
+
+      - name: Poetry build
+        run: poetry build
