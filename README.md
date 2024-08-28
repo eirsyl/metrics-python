@@ -150,6 +150,17 @@ MIDDLEWARE = [
 ]
 ```
 
+## django-ninja
+
+To measure request durations to views served by django-ninja, add the `DjangoNinjaMetricsMiddleware`.
+
+```python
+MIDDLEWARE = [
+    ...
+    "metrics_python.django_ninja.DjangoNinjaMetricsMiddleware",
+]
+```
+
 ## GraphQL
 
 ### Strawberry
