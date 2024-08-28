@@ -37,6 +37,22 @@ _import_string_should_wrap_middleware: ContextVar[bool] = ContextVar(
 #
 
 
+def _parse_size(size: str) -> int | None:
+    """
+    Parse request/response size if possible.
+    """
+
+    if not size:
+        return None
+
+    try:
+        return int(size)
+    except ValueError:
+        pass
+
+    return None
+
+
 def observe_metrics(
     *, request: HttpRequest, response: HttpResponse, request_start_time: float
 ) -> None:
@@ -46,11 +62,11 @@ def observe_metrics(
     view = get_view_name(request)
     status = str(response.status_code)
 
-    request_size: str | None = request.headers.get("Content-Length", None)
-    response_size: str | None = (
-        response.headers.get("Content-Length", None)
+    request_size: int | None = _parse_size(request.headers.get("Content-Length", ""))
+    response_size: int | None = _parse_size(
+        response.headers.get("Content-Length", "")
         if hasattr(response, "headers")
-        else None
+        else ""
     )
 
     if request_size is not None:
