@@ -1,6 +1,47 @@
-from prometheus_client import Counter, Histogram
+from prometheus_client import Counter, Histogram, Summary
 
 from ..constants import NAMESPACE
+
+#
+# Views
+#
+
+REQUEST_DURATION = Histogram(
+    "request_duration",
+    "Time spent on processing a request in the ASGI server",
+    ["status", "view", "method"],
+    unit="seconds",
+    namespace=NAMESPACE,
+    subsystem="django",
+)
+
+REQUEST_SIZE = Summary(
+    "request_size",
+    "HTTP request size in bytes.",
+    ["status", "view", "method"],
+    unit="bytes",
+    namespace=NAMESPACE,
+    subsystem="django",
+)
+
+RESPONSE_SIZE = Summary(
+    "response_size",
+    "HTTP response size in bytes.",
+    ["status", "view", "method"],
+    unit="bytes",
+    namespace=NAMESPACE,
+    subsystem="django",
+)
+
+COMBINED_SIZE = Summary(
+    "combined_size",
+    "HTTP request and response size combined in bytes.",
+    ["status", "view", "method"],
+    unit="bytes",
+    namespace=NAMESPACE,
+    subsystem="django",
+)
+
 
 #
 # Cache

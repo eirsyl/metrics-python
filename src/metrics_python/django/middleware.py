@@ -10,7 +10,11 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.decorators import sync_and_async_middleware
 
 from ._metrics import (
+    COMBINED_SIZE,
     MIDDLEWARE_DURATION,
+    REQUEST_DURATION,
+    REQUEST_SIZE,
+    RESPONSE_SIZE,
     VIEW_DUPLICATE_QUERY_COUNT,
     VIEW_QUERY_COUNT,
     VIEW_QUERY_DURATION,
@@ -27,6 +31,79 @@ ASYNC_MIDDLEWARE = Callable[[HttpRequest], Coroutine[Any, Any, HttpResponse]]
 _import_string_should_wrap_middleware: ContextVar[bool] = ContextVar(
     "import_string_should_wrap_middleware"
 )
+
+#
+# Request monitoring
+#
+
+
+def observe_metrics(
+    *, request: HttpRequest, response: HttpResponse, request_start_time: float
+) -> None:
+    request_end_time = time.perf_counter()
+
+    method = get_request_method(request)
+    view = get_view_name(request)
+    status = str(response.status_code)
+
+    request_size: str | None = request.headers.get("Content-Length", None)
+    response_size: str | None = (
+        response.headers.get("Content-Length", None)
+        if hasattr(response, "headers")
+        else None
+    )
+
+    if request_size is not None:
+        REQUEST_SIZE.labels(status=status, view=view, method=method).observe(
+            int(request_size)
+        )
+
+    if response_size is not None:
+        RESPONSE_SIZE.labels(status=status, view=view, method=method).observe(
+            int(response_size)
+        )
+
+    if request_size is not None and response_size is not None:
+        COMBINED_SIZE.labels(status=status, view=view, method=method).observe(
+            int(request_size) + int(response_size)
+        )
+
+    REQUEST_DURATION.labels(status=status, view=view, method=method).observe(
+        request_end_time - request_start_time
+    )
+
+
+@sync_and_async_middleware  # type: ignore
+def MetricsMiddleware(
+    get_response: MIDDLEWARE | ASYNC_MIDDLEWARE,
+) -> MIDDLEWARE | ASYNC_MIDDLEWARE:
+    if asyncio.iscoroutinefunction(get_response):
+
+        async def async_middleware(request: HttpRequest) -> HttpResponse:
+            request_start_time = time.perf_counter()
+            response = await cast(ASYNC_MIDDLEWARE, get_response)(request)
+            observe_metrics(
+                request=request,
+                response=response,
+                request_start_time=request_start_time,
+            )
+
+            return response
+
+        return async_middleware
+
+    def middleware(request: HttpRequest) -> HttpResponse:
+        request_start_time = time.perf_counter()
+        response = cast(MIDDLEWARE, get_response)(request)
+        observe_metrics(
+            request=request,
+            response=response,
+            request_start_time=request_start_time,
+        )
+
+        return response
+
+    return middleware
 
 
 #

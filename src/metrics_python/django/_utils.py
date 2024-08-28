@@ -1,21 +1,10 @@
 from django.http import HttpRequest
 
+from metrics_python.generics.http import sanitize_http_method
+
 
 def get_request_method(request: HttpRequest) -> str:
-    if request.method not in (
-        "GET",
-        "HEAD",
-        "POST",
-        "PUT",
-        "DELETE",
-        "TRACE",
-        "OPTIONS",
-        "CONNECT",
-        "PATCH",
-    ):
-        return "<invalid method>"
-
-    return str(request.method)
+    return sanitize_http_method(request.method)
 
 
 def get_view_name(request: HttpRequest) -> str:
