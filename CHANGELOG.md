@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.2.0](https://github.com/eirsyl/metrics-python/compare/0.1.0...0.2.0) (2024-08-28)
+
+
+### Features
+
+* Add ASGI middleware ([#15](https://github.com/eirsyl/metrics-python/issues/15)) ([8ff6f3e](https://github.com/eirsyl/metrics-python/commit/8ff6f3e4eaad9df404bd201088e62a6afbeca756))
+* Add django-ninja middleware ([#17](https://github.com/eirsyl/metrics-python/issues/17)) ([8bbe8fb](https://github.com/eirsyl/metrics-python/commit/8bbe8fb812e8a0b30b7b9dc16823c103b0d6bd15))
+* Monitor django request duration and request/response sizes ([#18](https://github.com/eirsyl/metrics-python/issues/18)) ([437c925](https://github.com/eirsyl/metrics-python/commit/437c9251276ac06b88276fbf3e6f3eb7aa496d02))
+
 ## [0.1.0](https://github.com/eirsyl/metrics-python/compare/0.0.20...0.1.0) (2024-07-16)
 
 
