@@ -86,6 +86,19 @@ from metrics_python.django.signals import patch_signals
 patch_signals()
 ```
 
+### Views
+
+View processing, request and response sizes can be measured using the MetricsMiddleware.
+
+```python
+MIDDLEWARE = [
+    ...
+    # It is important to place the MetricsMiddleware before the CommonMiddleware.
+    "metrics_python.django.middleware.MetricsMiddleware",
+    "django.middleware.common.CommonMiddleware",
+]
+```
+
 ### Query count and duration in views
 
 Database query count, duration, and duplicate queries can be observed

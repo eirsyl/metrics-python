@@ -1,4 +1,14 @@
-_known_methods = ["GET", "HEAD", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"]
+_known_methods = [
+    "GET",
+    "HEAD",
+    "POST",
+    "PUT",
+    "DELETE",
+    "TRACE",
+    "OPTIONS",
+    "CONNECT",
+    "PATCH",
+]
 
 
 def sanitize_http_method(method: str) -> str:
@@ -15,4 +25,4 @@ def sanitize_http_method(method: str) -> str:
     if method in _known_methods:
         return method
 
-    return "UNKNOWN"
+    return "<invalid method>"
