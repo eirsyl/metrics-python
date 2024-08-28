@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.1](https://github.com/eirsyl/metrics-python/compare/0.2.0...0.2.1) (2024-08-28)
+
+
+### Bug Fixes
+
+* Parse django request/response sizes ([#19](https://github.com/eirsyl/metrics-python/issues/19)) ([30a0ece](https://github.com/eirsyl/metrics-python/commit/30a0eceb8043b271b3ba2bb946d4980a284a020e))
+
 ## [0.2.0](https://github.com/eirsyl/metrics-python/compare/0.1.0...0.2.0) (2024-08-28)
 
 
