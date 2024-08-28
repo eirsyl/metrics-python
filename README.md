@@ -30,6 +30,30 @@ from metrics_python.generics.info import expose_application_info
 expose_application_info(version="your-application-version")
 ```
 
+## ASGI
+
+metrics-python contains an ASGI middleware to measure request/response durations and sizes.
+
+### Starlette
+
+```python
+from starlette.middleware import Middleware
+from metrics_python.asgi import ASGIMiddleware
+
+app = Starlette(
+    middleware=[Middleware(ASGIMiddleware)]
+)
+```
+
+### fastapi
+
+```python
+from metrics_python.asgi import ASGIMiddleware
+
+app = FastAPI()
+app.add_middleware(ASGIMiddleware)
+```
+
 ## Django
 
 ### Cache

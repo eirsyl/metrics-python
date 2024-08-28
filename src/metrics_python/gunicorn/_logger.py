@@ -6,6 +6,8 @@ from gunicorn.glogging import Logger
 from gunicorn.http.message import Request
 from gunicorn.http.wsgi import Response
 
+from metrics_python.generics.http import sanitize_http_method
+
 from ._metrics import ACTIVE_WORKERS, LOG_RECORDS, REQUEST_DURATION
 
 
@@ -74,7 +76,8 @@ class Prometheus(Logger):  # type: ignore
         worker_pid = os.getpid()
 
         duration_in_seconds = request_time.total_seconds()
+        method = sanitize_http_method(req.method)
 
-        REQUEST_DURATION.labels(status=status, worker_pid=worker_pid).observe(
-            duration_in_seconds
-        )
+        REQUEST_DURATION.labels(
+            status=status, method=method, worker_pid=worker_pid
+        ).observe(duration_in_seconds)

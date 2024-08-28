@@ -25,6 +25,10 @@ pytest-mock = "^3.14.0"
 pytest-socket = "^0.7.0"
 pytest-xdist = "^3.6.1"
 pytest-django = "^4.8.0"
+pytest-asyncio = "^0.24.0"
+starlette = "^0.38.2"
+fastapi = "^0.112.2"
+httpx = "^0.27.2"
 
 [build-system]
 requires = ["poetry-core"]
@@ -93,6 +97,9 @@ markers = [ ]
 DJANGO_SETTINGS_MODULE = "metrics_python.django.tests.settings"
 # --- pytest-env settings
 env = ["ENV_PATH=.env.test"]
+# --- pytest-asyncio settings
+asyncio_mode = "strict"
+asyncio_default_fixture_loop_scope = "function"
 
 [tool.coverage.run]
 branch = true
