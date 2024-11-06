@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.2](https://github.com/eirsyl/metrics-python/compare/0.2.1...0.2.2) (2024-11-06)
+
+
+### Bug Fixes
+
+* Do not log warning if get_response is missing ([#21](https://github.com/eirsyl/metrics-python/issues/21)) ([3dfdd65](https://github.com/eirsyl/metrics-python/commit/3dfdd650f4ea5981812fb0a3c644d6d0efd8b38f))
+
 ## [0.2.1](https://github.com/eirsyl/metrics-python/compare/0.2.0...0.2.1) (2024-08-28)
 
 
