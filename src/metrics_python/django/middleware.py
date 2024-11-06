@@ -3,7 +3,6 @@ import contextlib
 import time
 from contextvars import ContextVar
 from functools import wraps
-from logging import getLogger
 from typing import Any, Callable, Coroutine, Generator, Optional, cast
 
 from django.http import HttpRequest, HttpResponse
@@ -22,8 +21,6 @@ from ._metrics import (
 )
 from ._query_counter import QueryCounter
 from ._utils import get_request_method, get_view_name
-
-logger = getLogger(__name__)
 
 MIDDLEWARE = Callable[[HttpRequest], HttpResponse]
 ASYNC_MIDDLEWARE = Callable[[HttpRequest], Coroutine[Any, Any, HttpResponse]]
@@ -251,11 +248,10 @@ def _wrap_middleware(middleware: Any, middleware_name: str) -> Any:  # noqa
             get_response_duration = getattr(
                 middleware, "_metric_python_get_response_duration", None
             )
-            if not get_response_duration:
-                logger.warning(
-                    "Middleware was provided, but no get_response duration was found."
-                )
-            else:
+
+            # Subtract get_response_duration if set, this is measured using a
+            # separate timer if provided.
+            if get_response_duration is not None:
                 duration = max(duration - get_response_duration, 0)
 
             middleware._metric_python_get_response_duration = None
