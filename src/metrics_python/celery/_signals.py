@@ -1,6 +1,6 @@
 import time
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from django.utils import timezone
 
@@ -19,30 +19,28 @@ def _get_headers(task: Any) -> dict[str, Any]:
     Combine all headers in a celery task.
     """
 
-    headers = task.request.get("headers") or {}
-
-    # flatten nested headers
-    if "headers" in headers:
-        headers.update(headers["headers"])
-        del headers["headers"]
-
-    headers.update(task.request.get("properties") or {})
-
-    return headers
+    headers = task.request.headers or {}
+    return cast(dict[str, Any], headers.get(TASK_HEADERS, {}))
 
 
 def _set_headers(
-    *, existing_headers: dict[str, Any], headers: dict[str, Any]
+    *, kwarg_headers: dict[str, Any], headers: dict[str, Any]
 ) -> dict[str, Any]:
     """
     Set metrics-python headers.
     """
 
-    # Add metrics-python headers if not set.
-    existing_headers.setdefault(TASK_HEADERS, {})
+    existing_headers = kwarg_headers.copy()
 
-    # Add headers to the metrics-python header section.
-    existing_headers[TASK_HEADERS].update(headers)
+    # Add metrics-python headers if not set.
+    existing_headers.setdefault(TASK_HEADERS, {}).update(headers)
+
+    # https://github.com/celery/celery/issues/4875
+    #
+    # Need to setdefault the inner headers too since other
+    # tracing tools (dd-trace-py) also employ this exact
+    # workaround and we don't want to break them.
+    existing_headers.setdefault("headers", {}).update({TASK_HEADERS: headers})
 
     return existing_headers
 
@@ -55,13 +53,10 @@ def worker_process_init(**kwargs: Any) -> None:
 def before_task_publish(
     sender: str, routing_key: str, *args: Any, **kwargs: Any
 ) -> None:
-    message_headers = kwargs.pop("headers", {})
+    kwarg_headers = kwargs.pop("headers", {})
 
-    # Store metrics-python headers in the task headers, not the
-    # message headers.
-    message_headers.setdefault("headers", {})
-    message_headers["headers"] = _set_headers(
-        existing_headers=message_headers["headers"],
+    message_headers = _set_headers(
+        kwarg_headers=kwarg_headers,
         headers={
             TASK_PUBLISH_TIME_HEADER: timezone.now().isoformat(),
         },
@@ -74,8 +69,7 @@ def before_task_publish(
 
 
 def task_prerun(sender: Any, **kwargs: Any) -> None:
-    headers = _get_headers(sender)
-    metrics_python_headers = headers.get(TASK_HEADERS, {})
+    metrics_python_headers = _get_headers(sender)
 
     queue: str = getattr(sender, "queue", "default")
 
