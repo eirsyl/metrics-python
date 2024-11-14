@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.3](https://github.com/eirsyl/metrics-python/compare/0.2.2...0.2.3) (2024-11-14)
+
+
+### Bug Fixes
+
+* Fix Celery header propagation ([#24](https://github.com/eirsyl/metrics-python/issues/24)) ([3be9bbd](https://github.com/eirsyl/metrics-python/commit/3be9bbd593c7dbe60c4397a43f0cc28fb4e77b9a))
+
 ## [0.2.2](https://github.com/eirsyl/metrics-python/compare/0.2.1...0.2.2) (2024-11-06)
 
 
