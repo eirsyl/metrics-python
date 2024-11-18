@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "metrics_python", from = "src"}]
 
 [tool.poetry.dependencies]
-python = ">= 3.11, < 3.13"
+python = ">= 3.11, < 3.14"
 
 [tool.poetry.group.dev.dependencies]
 black = "^24.3.0"
