@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.4](https://github.com/eirsyl/metrics-python/compare/0.2.3...0.2.4) (2024-11-18)
+
+
+### Bug Fixes
+
+* Allow py 3.13 ([#26](https://github.com/eirsyl/metrics-python/issues/26)) ([9e429a5](https://github.com/eirsyl/metrics-python/commit/9e429a564f23212605f7a3cc3165015835911177))
+
 ## [0.2.3](https://github.com/eirsyl/metrics-python/compare/0.2.2...0.2.3) (2024-11-14)
 
 
