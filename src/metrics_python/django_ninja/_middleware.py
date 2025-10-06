@@ -4,10 +4,12 @@ from typing import Any, Callable
 from django.http import HttpRequest, HttpResponse
 from ninja.operation import PathView
 
-from ..django._utils import get_request_method, get_view_name
+from ..django._utils import get_request_method
 from ._metrics import VIEW_DURATION
+from ._utils import get_view_name
 
 NINJA_VIEW = "__metrics_python_django_ninja_view"
+NINJA_OPERATION_ID = "__metrics_python_django_ninja_operation_id"
 
 
 class DjangoNinjaMetricsMiddleware:
@@ -23,7 +25,9 @@ class DjangoNinjaMetricsMiddleware:
             view_duration = time.perf_counter() - view_start
 
             method = get_request_method(request)
-            view = get_view_name(request)
+            view = get_view_name(
+                request=request, operation_id=getattr(request, NINJA_OPERATION_ID, None)
+            )
             status = str(response.status_code)
 
             VIEW_DURATION.labels(method=method, view=view, status=status).observe(
@@ -44,3 +48,4 @@ class DjangoNinjaMetricsMiddleware:
             operation = _self._find_operation(request)
             if operation:
                 setattr(request, NINJA_VIEW, True)
+                setattr(request, NINJA_OPERATION_ID, operation.operation_id)
