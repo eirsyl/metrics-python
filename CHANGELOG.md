@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/eirsyl/metrics-python/compare/0.2.4...0.3.0) (2025-10-06)
+
+
+### Features
+
+* Use operation id as view name in django ninja if set ([#28](https://github.com/eirsyl/metrics-python/issues/28)) ([3975fac](https://github.com/eirsyl/metrics-python/commit/3975facec827678f33d1e4ac91ecc57b5fff62ab))
+
 ## [0.2.4](https://github.com/eirsyl/metrics-python/compare/0.2.3...0.2.4) (2024-11-18)
 
 
