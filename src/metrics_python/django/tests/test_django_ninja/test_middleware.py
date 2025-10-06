@@ -18,6 +18,17 @@ def test_ninja_middleware(client: Client, settings: Any) -> None:
         == 1.0
     )
 
+    response = client.get("/ninja/get-operation-id")
+    assert response.status_code == 200
+
+    assert (
+        REGISTRY.get_sample_value(
+            "metrics_python_django_ninja_view_duration_seconds_count",
+            {"status": "200", "view": "get-operation-id", "method": "GET"},
+        )
+        == 1.0
+    )
+
     # Make sure normal views continue to work as usual.
 
     response = client.get("/get")
