@@ -44,8 +44,17 @@ class DjangoNinjaMetricsMiddleware:
         indicate that this is a request to a view served by django-ninja.
         """
         _self = getattr(view_func, "__self__", None)
+        _closure = getattr(view_func, "__closure__", None)
+
         if _self and isinstance(_self, PathView):
             operation = _self._find_operation(request)
             if operation:
                 setattr(request, NINJA_VIEW, True)
                 setattr(request, NINJA_OPERATION_ID, operation.operation_id)
+        elif _closure and isinstance(_closure, tuple) and len(_closure) == 1:
+            _cell_content = _closure[0].cell_contents
+            if isinstance(_cell_content, PathView):
+                operation = _cell_content._find_operation(request)
+                if operation:
+                    setattr(request, NINJA_VIEW, True)
+                    setattr(request, NINJA_OPERATION_ID, operation.operation_id)

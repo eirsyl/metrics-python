@@ -94,12 +94,14 @@ class QueryCounter:
         print(yellow("\nDuplicate queries detected!"))
 
         for duplicate, count in self.duplicate_count.items():
-            alias, stack_index = duplicate
-            stack_summary, sql = self.stack_summaries[stack_index]
+            _, stack_index = duplicate
+            stack_summary, _ = self.stack_summaries[stack_index]
             stack_raw = self.stacks[stack_index]
 
             gap = False
-            for formatted, (frame, _) in zip(stack_summary.format(), stack_raw):
+            for formatted, (frame, _) in zip(
+                stack_summary.format(), stack_raw, strict=True
+            ):
                 filename = frame.f_code.co_filename
                 is_package = "site-packages" in filename
                 f_locals = frame.f_locals
@@ -120,9 +122,10 @@ class QueryCounter:
                 if is_template_node:
                     node = f_locals["self"]
 
-                    # There is usually multiple stack frames that process the same template line. For this rendering,
-                    # we just want to show the template stack, so we can ignore any frames that have an identical Node
-                    # as their predecessor.
+                    # There is usually multiple stack frames that process the same
+                    # template line. For this rendering, we just want to show the
+                    # template stack, so we can ignore any frames that have an identical
+                    # Node as their predecessor.
                     if frame.f_back:
                         parent_locals = frame.f_back.f_locals
                         parent_is_template = "self" in parent_locals and isinstance(
