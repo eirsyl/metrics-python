@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.1](https://github.com/eirsyl/metrics-python/compare/0.3.0...0.3.1) (2025-11-17)
+
+
+### Bug Fixes
+
+* Add support for django-ninja 1.5.0 ([#30](https://github.com/eirsyl/metrics-python/issues/30)) ([0b9ba24](https://github.com/eirsyl/metrics-python/commit/0b9ba245d79bbff5b6cd90f18492aedc2bc49bca))
+
 ## [0.3.0](https://github.com/eirsyl/metrics-python/compare/0.2.4...0.3.0) (2025-10-06)
 
 
