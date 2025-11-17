@@ -18,11 +18,11 @@ $(BASE): | $(POETRY) ; $(info $(M) checking PROJECT…)
 	$Q
 
 .PHONY: fix
-fix: fix-ruff fix-black | $(BASE) ; @ ## Run all fixers
+fix: fix-ruff fix-ruff-format | $(BASE) ; @ ## Run all fixers
 	$Q
 
 .PHONY: lint-backend
-lint-backend: lint-ruff lint-black lint-dmypy | $(BASE) ; @ ## Run all backend linters
+lint-backend: lint-ruff lint-ruff-format lint-dmypy | $(BASE) ; @ ## Run all backend linters
 	$Q
 
 .PHONY: lint
@@ -55,13 +55,13 @@ test-pytest-coverage: .venv | $(BASE) ; $(info $(M) running tests with coverage�
 
 # Linters
 
-.PHONY: lint-black
-lint-black: .venv | $(BASE) ; $(info $(M) running black…) @ ## Run black linter
-	$Q cd $(BASE) && $(POETRY) run black --check $(PACKAGE)
-
 .PHONY: lint-ruff
 lint-ruff: .venv | $(BASE) ; $(info $(M) running ruff…) @ ## Run ruff linter
-	$Q cd $(BASE) && $(POETRY) run ruff $(PACKAGE)
+	$Q cd $(BASE) && $(POETRY) run ruff check $(PACKAGE)
+
+.PHONY: lint-ruff-format
+lint-ruff-format: .venv | $(BASE) ; $(info $(M) running ruff-format…) @ ## Run ruff format linter
+	$Q cd $(BASE) && $(POETRY) run ruff format --check $(PACKAGE)
 
 .PHONY: lint-mypy
 lint-mypy: .venv | $(BASE) ; $(info $(M) running mypy…) @ ## Run mypy linter
@@ -73,13 +73,14 @@ lint-dmypy: .venv | $(BASE) ; $(info $(M) running mypy…) @ ## Run dmypy linter
 
 # Fixers
 
-.PHONY: fix-black
-fix-black: .venv | $(BASE) ; $(info $(M) running black…) @ ## Run black fixer
-	$Q cd $(BASE) && $(POETRY) run black $(PACKAGE)
-
 .PHONY: fix-ruff
 fix-ruff: .venv | $(BASE) ; $(info $(M) running ruff…) @ ## Run ruff fixer
-	$Q cd $(BASE) && $(POETRY) run ruff --fix $(PACKAGE)
+	$Q cd $(BASE) && $(POETRY) run ruff check --fix $(PACKAGE)
+
+.PHONY: fix-ruff-format
+fix-ruff-format: .venv | $(BASE) ; $(info $(M) running ruff-format…) @ ## Run ruff format fixer
+	$Q cd $(BASE) && $(POETRY) run ruff format $(PACKAGE)
+
 
 # Dependency management
 

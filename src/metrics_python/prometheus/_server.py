@@ -35,8 +35,8 @@ def _wipe_prometheus_dir(prometheus_dir: Path) -> None:
         m = PATTERN_RE.match(filepath.name)
         if not m:
             raise RuntimeError(
-                f"File already exists in {str(prometheus_dir)} not matching "
-                f"known pattern: {str(filepath)}"
+                f"File already exists in {prometheus_dir!s} not matching "
+                f"known pattern: {filepath!s}"
             )
 
         if master_pid == int(m.group(1)):
