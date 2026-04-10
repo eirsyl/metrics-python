@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.2](https://github.com/eirsyl/metrics-python/compare/0.3.1...0.3.2) (2026-04-10)
+
+
+### Bug Fixes
+
+* **dependencies:** Support python 3.14 ([#32](https://github.com/eirsyl/metrics-python/issues/32)) ([ea92eec](https://github.com/eirsyl/metrics-python/commit/ea92eec2c607568729ba850b406fadfc2c00a625))
+
 ## [0.3.1](https://github.com/eirsyl/metrics-python/compare/0.3.0...0.3.1) (2025-11-17)
 
 
