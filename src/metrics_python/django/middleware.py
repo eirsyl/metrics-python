@@ -1,5 +1,6 @@
 import asyncio
 import contextlib
+import inspect
 import time
 from contextvars import ContextVar
 from functools import wraps
@@ -90,7 +91,7 @@ def observe_metrics(
 def MetricsMiddleware(
     get_response: MIDDLEWARE | ASYNC_MIDDLEWARE,
 ) -> MIDDLEWARE | ASYNC_MIDDLEWARE:
-    if asyncio.iscoroutinefunction(get_response):
+    if inspect.iscoroutinefunction(get_response):
 
         async def async_middleware(request: HttpRequest) -> HttpResponse:
             request_start_time = time.perf_counter()
@@ -158,7 +159,7 @@ def _measure_request(
 def QueryCountMiddleware(
     get_response: MIDDLEWARE | ASYNC_MIDDLEWARE,
 ) -> MIDDLEWARE | ASYNC_MIDDLEWARE:
-    if asyncio.iscoroutinefunction(get_response):
+    if inspect.iscoroutinefunction(get_response):
 
         async def async_middleware(request: HttpRequest) -> HttpResponse:
             with QueryCounter.create_counter() as counter:
@@ -302,7 +303,7 @@ def _wrap_middleware(middleware: Any, middleware_name: str) -> Any:  # noqa
             with _get_response_timer():
                 return await get_response(*args, **kwargs)
 
-        if asyncio.iscoroutinefunction(get_response):
+        if inspect.iscoroutinefunction(get_response):
             return wraps(get_response)(_aget_response)
 
         return wraps(get_response)(_get_response)
@@ -329,11 +330,11 @@ def _wrap_middleware(middleware: Any, middleware_name: str) -> Any:  # noqa
                 self._async_check()
 
         def _async_check(self) -> None:
-            if asyncio.iscoroutinefunction(self.get_response):
+            if inspect.iscoroutinefunction(self.get_response):
                 self._is_coroutine = asyncio.coroutines._is_coroutine  # type: ignore
 
         def async_route_check(self) -> bool:
-            return asyncio.iscoroutinefunction(self.get_response)
+            return inspect.iscoroutinefunction(self.get_response)
 
         def __getattr__(self, method_name: str) -> Any:
             if method_name not in (
