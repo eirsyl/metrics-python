@@ -1,6 +1,9 @@
 name: metrics-python CI
 
-on: push
+on:
+  push:
+    branches: [main]
+  pull_request:
 permissions:
   id-token: write
   contents: read
