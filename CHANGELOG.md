@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.1](https://github.com/eirsyl/metrics-python/compare/0.4.0...0.4.1) (2026-07-10)
+
+
+### Bug Fixes
+
+* ⬆️ Change iscoroutinefunction calls from asyncio to inspect ([#37](https://github.com/eirsyl/metrics-python/issues/37)) ([a7e3095](https://github.com/eirsyl/metrics-python/commit/a7e3095535bea971e6c1d3201f09b38a970d5d43))
+
 ## [0.4.0](https://github.com/eirsyl/metrics-python/compare/0.3.2...0.4.0) (2026-04-10)
 
 
