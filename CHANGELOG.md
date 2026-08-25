@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.2](https://github.com/eirsyl/metrics-python/compare/0.4.1...0.4.2) (2026-08-25)
+
+
+### Bug Fixes
+
+* delay skew from tasks scheduled in the future ([#39](https://github.com/eirsyl/metrics-python/issues/39)) ([82a91ce](https://github.com/eirsyl/metrics-python/commit/82a91cea943bd90bef44cfbf9a39fb9c1532aec3))
+
 ## [0.4.1](https://github.com/eirsyl/metrics-python/compare/0.4.0...0.4.1) (2026-07-10)
 
 
