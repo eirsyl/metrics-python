@@ -23,6 +23,23 @@ def _get_headers(task: Any) -> dict[str, Any]:
     return cast(dict[str, Any], headers.get(TASK_HEADERS, {}))
 
 
+def _get_due_time(task: Any, *, published: datetime) -> datetime:
+    """
+    Tasks scheduled with countdown or eta are meant to wait, so that wait is not
+    queue delay. Such tasks are due at their eta rather than when published.
+    """
+
+    eta = getattr(task.request, "eta", None)
+
+    if not eta:
+        return published
+
+    try:
+        return max(published, datetime.fromisoformat(eta))
+    except (TypeError, ValueError):
+        return published
+
+
 def _set_headers(
     *, kwarg_headers: dict[str, Any], headers: dict[str, Any]
 ) -> dict[str, Any]:
@@ -82,7 +99,8 @@ def task_prerun(sender: Any, **kwargs: Any) -> None:
         try:
             now = timezone.now()
             task_published = datetime.fromisoformat(task_published_time)
-            delay = (now - task_published).total_seconds()
+            due = _get_due_time(sender, published=task_published)
+            delay = max((now - due).total_seconds(), 0)
 
             TASK_EXECUTION_DELAY.labels(task=sender.name, queue=queue).observe(delay)
         except ValueError:
