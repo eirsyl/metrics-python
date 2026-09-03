@@ -3,7 +3,6 @@ import time
 from starlette.applications import Starlette
 from starlette.datastructures import Headers
 from starlette.requests import Request
-from starlette.responses import Response
 from starlette.types import Message, Receive, Scope, Send
 
 from metrics_python.generics.http import sanitize_http_method
@@ -30,8 +29,8 @@ class ASGIMiddleware:
         request_start_time = time.perf_counter()
 
         status_code = 500
-        headers = []
-        body = b""
+        headers: list[tuple[bytes, bytes]] = []
+        body_size = 0
         response_start_time = None
 
         async def send_wrapper(message: Message) -> None:
@@ -41,8 +40,11 @@ class ASGIMiddleware:
                 status_code = message["status"]
                 response_start_time = time.perf_counter()
             elif message["type"] == "http.response.body" and "body" in message:
-                nonlocal body
-                body += message["body"]
+                # Count the bytes instead of collecting them. Holding on to the
+                # body keeps a copy of every response in memory, and grows
+                # without bound on a long lived stream.
+                nonlocal body_size
+                body_size += len(message["body"])
             await send(message)
 
         try:
@@ -50,10 +52,6 @@ class ASGIMiddleware:
         except Exception as exc:
             raise exc
         finally:
-            response = Response(
-                content=body, headers=Headers(raw=headers), status_code=status_code
-            )
-
             duration_without_streaming = 0.0
             if response_start_time:
                 duration_without_streaming = max(
@@ -63,7 +61,9 @@ class ASGIMiddleware:
             # Observe values.
             observe(
                 request=request,
-                response=response,
+                status_code=status_code,
+                response_headers=Headers(raw=headers),
+                body_size=body_size,
                 duration_without_streaming=duration_without_streaming,
             )
 
@@ -71,23 +71,36 @@ class ASGIMiddleware:
             inprogress.dec()
 
 
+def _content_length(headers: Headers, *, default: int) -> int:
+    value = headers.get("Content-Length")
+
+    if value is None:
+        return default
+
+    try:
+        return int(value)
+    except ValueError:
+        return default
+
+
 def observe(
     *,
     request: Request,
-    response: Response,
+    status_code: int,
+    response_headers: Headers,
+    body_size: int,
     duration_without_streaming: float,
 ) -> None:
     """Measure values."""
 
-    status = str(response.status_code)
+    status = str(status_code)
     method = sanitize_http_method(request.method)
 
-    request_size = int(request.headers.get("Content-Length", 0))
-    response_size = (
-        int(response.headers.get("Content-Length", 0))
-        if hasattr(response, "headers")
-        else 0
-    )
+    request_size = _content_length(request.headers, default=0)
+
+    # Responses without a Content-Length, streaming responses in particular, are
+    # measured by the number of body bytes that were sent.
+    response_size = _content_length(response_headers, default=body_size)
 
     REQUEST_SIZE.labels(status=status, method=method).observe(request_size)
     RESPONSE_SIZE.labels(status=status, method=method).observe(response_size)

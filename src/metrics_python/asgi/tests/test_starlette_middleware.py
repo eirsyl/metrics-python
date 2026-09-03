@@ -84,3 +84,44 @@ async def test_middleware_with_starlette_app_websocket(client: TestClient) -> No
         )
         is None  # We currently does not support websockets.
     )
+
+
+@pytest.mark.asyncio
+async def test_response_size_from_content_length(client: TestClient) -> None:
+    """A response with a Content-Length is measured from the header."""
+
+    response = client.get("/plain/")
+
+    assert response.status_code == 200
+    assert response.headers["Content-Length"] == "13"
+
+    assert (
+        REGISTRY.get_sample_value(
+            "metrics_python_asgi_response_size_bytes_sum",
+            {"status": "200", "method": "GET"},
+        )
+        == 13.0
+    )
+
+
+@pytest.mark.asyncio
+async def test_response_size_of_a_streaming_response(client: TestClient) -> None:
+    """
+    A streaming response carries no Content-Length, so the size comes from
+    counting the bytes as they are sent. The body must not be accumulated to
+    work this out, a long lived stream would grow in memory without bound.
+    """
+
+    response = client.get("/stream/")
+
+    assert response.status_code == 200
+    assert "Content-Length" not in response.headers
+    assert response.text == "abc"
+
+    assert (
+        REGISTRY.get_sample_value(
+            "metrics_python_asgi_response_size_bytes_sum",
+            {"status": "200", "method": "GET"},
+        )
+        == 3.0
+    )
