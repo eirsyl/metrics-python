@@ -1,5 +1,7 @@
 import collections
 import contextlib
+import hashlib
+import sys
 import time
 import traceback
 from logging import getLogger
@@ -9,13 +11,24 @@ from typing import Any, Generator
 from django.db import connections
 from django.template import Node
 
-from .conf import settings
+from ..config import metric_enabled, print_duplicate_queries
 
 logger = getLogger(__name__)
 
 
 def yellow(text: str) -> str:
     return f"\033[33m{text}\033[0m"
+
+
+def _observe_duplicates() -> bool:
+    """
+    Walking the stack for every query is only worth it if one of the duplicate
+    query counters is actually exported.
+    """
+
+    return metric_enabled("django_view_duplicate_query_count") or metric_enabled(
+        "django_celery_duplicate_query_count"
+    )
 
 
 class QueryCounter:
@@ -27,6 +40,14 @@ class QueryCounter:
         self.query_count: collections.Counter[str] = collections.Counter()
         self.duration_count: collections.Counter[str] = collections.Counter()
 
+        # Maps the identity of a (stack, sql) pair to its position in
+        # stack_summaries and stacks. Hashing the stack keeps this a dict
+        # lookup, comparing StackSummary objects against every stack seen so
+        # far makes duplicate detection quadratic in the number of queries.
+        self.stack_indexes: dict[bytes, int] = {}
+
+        # Only populated when duplicate queries are printed, formatting a stack
+        # is the only thing that needs the frames themselves.
         self.stack_summaries: list[tuple[traceback.StackSummary, str]] = []
         self.stacks: list[list[tuple[FrameType, int]]] = []
         self.duplicate_count: collections.Counter[tuple[str, int]] = (
@@ -38,25 +59,8 @@ class QueryCounter:
     ) -> Any:
         alias = context["connection"].alias
 
-        if settings.OBSERVE_DUPLICATE_QUERIES:
-            stack = list(reversed(list(traceback.walk_stack(None))))
-
-            # StackSummary is used for comparison (have we seen this stack
-            # before?).
-            stack_summary = traceback.StackSummary.extract(stack)
-
-            # If the same SQL came from the same stack trace previously,
-            # it is considered as a duplicate.
-            if (stack_summary, sql) in self.stack_summaries:
-                index = self.stack_summaries.index((stack_summary, sql))
-                # self.duplicates needs to be indexed with a number because
-                # StackSummary is not hashable.
-                self.duplicate_count[(alias, index)] += 1
-            else:
-                self.stack_summaries.append((stack_summary, sql))
-
-                if settings.PRINT_DUPLICATE_QUERIES:
-                    self.stacks.append(stack)
+        if _observe_duplicates():
+            self._observe_stack(alias=alias, sql=sql)
 
         try:
             start = time.perf_counter_ns()
@@ -66,6 +70,60 @@ class QueryCounter:
 
             self.query_count[alias] += 1
             self.duration_count[alias] += duration
+
+    def _observe_stack(self, *, alias: str, sql: str) -> None:
+        """
+        Record where a query came from. If the same SQL was executed from the
+        same stack before, it is a duplicate.
+
+        The stack is identified by a digest of each frame's file, line and
+        function. That is what FrameSummary equality compares, locals are only
+        populated when a stack is captured with capture_locals, so the digest
+        distinguishes exactly the same stacks the comparison used to.
+        """
+
+        printing = print_duplicate_queries()
+
+        digest = hashlib.blake2b(digest_size=16)
+        frames: list[tuple[FrameType, int]] = []
+
+        # Walk the stack directly rather than with traceback.walk_stack, which
+        # starts four frames up to account for being called by
+        # StackSummary.extract. Iterated anywhere else it drops the innermost
+        # frames, the ones that say where the query actually came from, and
+        # returns nothing at all when the stack is shallower than that.
+        frame: FrameType | None = sys._getframe().f_back
+
+        while frame is not None:
+            code = frame.f_code
+            lineno = frame.f_lineno
+
+            digest.update(code.co_filename.encode("utf-8", "replace"))
+            digest.update(b"\0")
+            digest.update(str(lineno).encode("ascii"))
+            digest.update(b"\0")
+            digest.update(code.co_name.encode("utf-8", "replace"))
+            digest.update(b"\0")
+
+            if printing:
+                frames.append((frame, lineno))
+
+            frame = frame.f_back
+
+        digest.update(str(sql).encode("utf-8", "replace"))
+        key = digest.digest()
+
+        index = self.stack_indexes.get(key)
+        if index is not None:
+            self.duplicate_count[(alias, index)] += 1
+            return
+
+        self.stack_indexes[key] = len(self.stack_indexes)
+
+        if printing:
+            stack = list(reversed(frames))
+            self.stacks.append(stack)
+            self.stack_summaries.append((traceback.StackSummary.extract(stack), sql))
 
     def get_total_query_count(self) -> int:
         return self.query_count.total()
@@ -85,7 +143,12 @@ class QueryCounter:
         return self.duplicate_count.total()
 
     def get_total_duplicate_query_count_by_alias(self) -> dict[str, int]:
-        return {alias: count for (alias, _), count in self.duplicate_count.items()}
+        counts: collections.Counter[str] = collections.Counter()
+
+        for (alias, _), count in self.duplicate_count.items():
+            counts[alias] += count
+
+        return dict(counts)
 
     def print_duplicate_queries(self) -> None:  # noqa: C901
         if not self.duplicate_count:
@@ -163,5 +226,5 @@ class QueryCounter:
 
             yield counter
 
-            if settings.PRINT_DUPLICATE_QUERIES:
+            if print_duplicate_queries():
                 counter.print_duplicate_queries()

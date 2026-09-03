@@ -1,12 +1,9 @@
-from prometheus_client import Histogram
+from ..config import histogram
 
-from ..constants import NAMESPACE
-
-VIEW_DURATION = Histogram(
+VIEW_DURATION = histogram(
     "view_duration",
     "Time spent on a django-api-decorator view.",
     ["method", "view", "status"],
     unit="seconds",
-    namespace=NAMESPACE,
     subsystem="django_api_decorator",
 )

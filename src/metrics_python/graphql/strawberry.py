@@ -52,7 +52,7 @@ class PrometheusExtension(SchemaExtension):
             backend="strawberry",
         ).observe(duration)
         LIFECYCLE_STEP_DURATION.labels(
-            lifecycle_step=LifecycleStep.OPERATION, backend="strawberry"
+            lifecycle_step=LifecycleStep.OPERATION.value, backend="strawberry"
         ).observe(duration)
 
     def on_validate(self) -> Generator[None, None, None]:
@@ -63,7 +63,7 @@ class PrometheusExtension(SchemaExtension):
         duration = time.perf_counter() - start_time
 
         LIFECYCLE_STEP_DURATION.labels(
-            lifecycle_step=LifecycleStep.VALIDATION, backend="strawberry"
+            lifecycle_step=LifecycleStep.VALIDATION.value, backend="strawberry"
         ).observe(duration)
 
     def on_parse(self) -> Generator[None, None, None]:
@@ -74,7 +74,7 @@ class PrometheusExtension(SchemaExtension):
         duration = time.perf_counter() - start_time
 
         LIFECYCLE_STEP_DURATION.labels(
-            lifecycle_step=LifecycleStep.PARSE, backend="strawberry"
+            lifecycle_step=LifecycleStep.PARSE.value, backend="strawberry"
         ).observe(duration)
 
     async def resolve(
@@ -103,7 +103,7 @@ class PrometheusExtension(SchemaExtension):
         duration = time.perf_counter() - start_time
 
         LIFECYCLE_STEP_DURATION.labels(
-            lifecycle_step=LifecycleStep.RESOLVE, backend="strawberry"
+            lifecycle_step=LifecycleStep.RESOLVE.value, backend="strawberry"
         ).observe(duration)
 
         return result
@@ -128,7 +128,7 @@ class PrometheusExtensionSync(PrometheusExtension):
         duration = time.perf_counter() - start_time
 
         LIFECYCLE_STEP_DURATION.labels(
-            lifecycle_step=LifecycleStep.RESOLVE, backend="strawberry"
+            lifecycle_step=LifecycleStep.RESOLVE.value, backend="strawberry"
         ).observe(duration)
 
         return result

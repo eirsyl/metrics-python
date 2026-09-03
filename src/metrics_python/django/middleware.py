@@ -10,7 +10,6 @@ from django.http import HttpRequest, HttpResponse
 from django.utils.decorators import sync_and_async_middleware
 
 from ._metrics import (
-    COMBINED_SIZE,
     MIDDLEWARE_DURATION,
     REQUEST_DURATION,
     REQUEST_SIZE,
@@ -75,11 +74,6 @@ def observe_metrics(
     if response_size is not None:
         RESPONSE_SIZE.labels(status=status, view=view, method=method).observe(
             int(response_size)
-        )
-
-    if request_size is not None and response_size is not None:
-        COMBINED_SIZE.labels(status=status, view=view, method=method).observe(
-            int(request_size) + int(response_size)
         )
 
     REQUEST_DURATION.labels(status=status, view=view, method=method).observe(
