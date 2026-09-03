@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.5.0](https://github.com/eirsyl/metrics-python/compare/0.4.2...0.5.0) (2026-09-03)
+
+
+### ⚠ BREAKING CHANGES
+
+* Configurable metrics: cut series cost and fix four instrumentation bugs ([#41](https://github.com/eirsyl/metrics-python/issues/41))
+
+### Features
+
+* Configurable metrics: cut series cost and fix four instrumentation bugs ([#41](https://github.com/eirsyl/metrics-python/issues/41)) ([1465676](https://github.com/eirsyl/metrics-python/commit/14656769b79866872dd10eea2ead95208c8ff613))
+
 ## [0.4.2](https://github.com/eirsyl/metrics-python/compare/0.4.1...0.4.2) (2026-08-25)
 
 
