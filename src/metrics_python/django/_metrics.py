@@ -1,37 +1,30 @@
-from prometheus_client import Counter, Histogram, Summary
-
-from ..buckets import buckets_for
-from ..constants import NAMESPACE
+from ..config import counter, histogram, summary
 
 #
 # Views
 #
 
-REQUEST_DURATION = Histogram(
+REQUEST_DURATION = histogram(
     "request_duration",
     "Time spent on processing a request in the ASGI server",
     ["status", "view", "method"],
     unit="seconds",
-    buckets=buckets_for("django_request_duration"),
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
-REQUEST_SIZE = Summary(
+REQUEST_SIZE = summary(
     "request_size",
     "HTTP request size in bytes.",
     ["status", "view", "method"],
     unit="bytes",
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
-RESPONSE_SIZE = Summary(
+RESPONSE_SIZE = summary(
     "response_size",
     "HTTP response size in bytes.",
     ["status", "view", "method"],
     unit="bytes",
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
@@ -40,23 +33,19 @@ RESPONSE_SIZE = Summary(
 # Cache
 #
 
-CACHE_CALL_DURATION = Histogram(
+CACHE_CALL_DURATION = histogram(
     "cache_call_duration",
     "Cache call duration by method and alias.",
     ["alias", "method"],
     unit="seconds",
-    buckets=buckets_for("django_cache_call_duration"),
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
-CACHE_CALL_GETS_DURATION = Histogram(
+CACHE_CALL_GETS_DURATION = histogram(
     "cache_call_gets_duration",
     "Cache call duration for get requests by cache hit, alias and method.",
     ["alias", "method", "hit"],
     unit="seconds",
-    buckets=buckets_for("django_cache_call_gets_duration"),
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
@@ -66,37 +55,32 @@ CACHE_CALL_GETS_DURATION = Histogram(
 
 # This counter is used to calculate the average number of
 # sql queries executed by a view.
-VIEW_QUERY_REQUESTS_COUNT = Counter(
+VIEW_QUERY_REQUESTS_COUNT = counter(
     "view_query_request_count",
     "Number of requests sent to a view.",
     ["method", "view", "status"],
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
-VIEW_QUERY_DURATION = Histogram(
+VIEW_QUERY_DURATION = histogram(
     "view_query_duration",
     "Database query duration by views.",
     ["db", "method", "view", "status"],
     unit="seconds",
-    buckets=buckets_for("django_view_query_duration"),
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
-VIEW_QUERY_COUNT = Counter(
+VIEW_QUERY_COUNT = counter(
     "view_query_count",
     "Number of database queries executed by views.",
     ["db", "method", "view", "status"],
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
-VIEW_DUPLICATE_QUERY_COUNT = Counter(
+VIEW_DUPLICATE_QUERY_COUNT = counter(
     "view_duplicate_query_count",
     "Number of duplicate database queries executed by views.",
     ["db", "method", "view", "status"],
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
@@ -107,37 +91,32 @@ VIEW_DUPLICATE_QUERY_COUNT = Counter(
 
 # This counter is used to calculate the average number of
 # sql queries executed by a task.
-CELERY_QUERY_REQUESTS_COUNT = Counter(
+CELERY_QUERY_REQUESTS_COUNT = counter(
     "celery_query_request_count",
     "Number of requests sent to a celery task.",
     ["task"],
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
-CELERY_QUERY_DURATION = Histogram(
+CELERY_QUERY_DURATION = histogram(
     "celery_query_duration",
     "Database query duration by celery tasks.",
     ["db", "task"],
     unit="seconds",
-    buckets=buckets_for("django_celery_query_duration"),
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
-CELERY_QUERY_COUNT = Counter(
+CELERY_QUERY_COUNT = counter(
     "celery_query_count",
     "Number of database queries executed by celery tasks.",
     ["db", "task"],
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
-CELERY_DUPLICATE_QUERY_COUNT = Counter(
+CELERY_DUPLICATE_QUERY_COUNT = counter(
     "celery_duplicate_query_count",
     "Number of duplicate database queries executed by celery tasks.",
     ["db", "task"],
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
@@ -145,23 +124,19 @@ CELERY_DUPLICATE_QUERY_COUNT = Counter(
 # Postgres database connection
 #
 
-DATABASE_GET_NEW_CONNECTION_HISTOGRAM = Histogram(
+DATABASE_GET_NEW_CONNECTION_HISTOGRAM = histogram(
     "database_get_new_connection_duration",
-    documentation="Time it takes to get a new connection to Postgres.",
-    labelnames=["database_host", "database_port", "database_name", "database_username"],
+    "Time it takes to get a new connection to Postgres.",
+    ["database_host", "database_port", "database_name", "database_username"],
     unit="seconds",
-    buckets=buckets_for("django_database_get_new_connection_duration"),
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
-DATABASE_INIT_CONNECTION_STATE_HISTOGRAM = Histogram(
+DATABASE_INIT_CONNECTION_STATE_HISTOGRAM = histogram(
     "database_init_connection_state_duration",
-    documentation="Time it takes to initialize the connection state.",
-    labelnames=["database_host", "database_port", "database_name", "database_username"],
+    "Time it takes to initialize the connection state.",
+    ["database_host", "database_port", "database_name", "database_username"],
     unit="seconds",
-    buckets=buckets_for("django_database_init_connection_state_duration"),
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
@@ -170,13 +145,11 @@ DATABASE_INIT_CONNECTION_STATE_HISTOGRAM = Histogram(
 # Signals
 #
 
-SIGNAL_DURATION = Histogram(
+SIGNAL_DURATION = histogram(
     "signal_duration",
     "Time spent on signals.",
     ["signal"],
     unit="seconds",
-    buckets=buckets_for("django_signal_duration"),
-    namespace=NAMESPACE,
     subsystem="django",
 )
 
@@ -185,12 +158,10 @@ SIGNAL_DURATION = Histogram(
 #
 
 
-MIDDLEWARE_DURATION = Histogram(
+MIDDLEWARE_DURATION = histogram(
     "middleware_duration",
     "Time spent on middleware methods.",
     ["middleware", "method"],
     unit="seconds",
-    buckets=buckets_for("django_middleware_duration"),
-    namespace=NAMESPACE,
     subsystem="django",
 )

@@ -11,13 +11,24 @@ from typing import Any, Generator
 from django.db import connections
 from django.template import Node
 
-from .conf import settings
+from ..config import metric_enabled, print_duplicate_queries
 
 logger = getLogger(__name__)
 
 
 def yellow(text: str) -> str:
     return f"\033[33m{text}\033[0m"
+
+
+def _observe_duplicates() -> bool:
+    """
+    Walking the stack for every query is only worth it if one of the duplicate
+    query counters is actually exported.
+    """
+
+    return metric_enabled("django_view_duplicate_query_count") or metric_enabled(
+        "django_celery_duplicate_query_count"
+    )
 
 
 class QueryCounter:
@@ -48,7 +59,7 @@ class QueryCounter:
     ) -> Any:
         alias = context["connection"].alias
 
-        if settings.OBSERVE_DUPLICATE_QUERIES:
+        if _observe_duplicates():
             self._observe_stack(alias=alias, sql=sql)
 
         try:
@@ -71,7 +82,7 @@ class QueryCounter:
         distinguishes exactly the same stacks the comparison used to.
         """
 
-        printing = settings.PRINT_DUPLICATE_QUERIES
+        printing = print_duplicate_queries()
 
         digest = hashlib.blake2b(digest_size=16)
         frames: list[tuple[FrameType, int]] = []
@@ -215,5 +226,5 @@ class QueryCounter:
 
             yield counter
 
-            if settings.PRINT_DUPLICATE_QUERIES:
+            if print_duplicate_queries():
                 counter.print_duplicate_queries()

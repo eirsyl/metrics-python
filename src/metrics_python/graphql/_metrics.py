@@ -1,25 +1,18 @@
-from prometheus_client import Histogram
+from ..config import histogram
 
-from ..buckets import buckets_for
-from ..constants import NAMESPACE
-
-OPERATION_DURATION = Histogram(
+OPERATION_DURATION = histogram(
     "operation_duration",
     "Time spent on a GraphQL operation.",
     ["operation_name", "resource", "operation_type", "backend"],
     unit="seconds",
-    buckets=buckets_for("graphql_operation_duration"),
-    namespace=NAMESPACE,
     subsystem="graphql",
 )
 
 
-LIFECYCLE_STEP_DURATION = Histogram(
+LIFECYCLE_STEP_DURATION = histogram(
     "lifecycle_step_duration",
     "Time spent on validating or parsing a query.",
     ["lifecycle_step", "backend"],
     unit="seconds",
-    buckets=buckets_for("graphql_lifecycle_step_duration"),
-    namespace=NAMESPACE,
     subsystem="graphql",
 )

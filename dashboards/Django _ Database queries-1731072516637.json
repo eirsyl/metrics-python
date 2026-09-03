@@ -568,7 +568,8 @@
         }
       ],
       "title": "Average number of duplicate DB queries executed by view",
-      "type": "timeseries"
+      "type": "timeseries",
+      "description": "Disabled by default from metrics-python 0.5.0, it walks the stack on every query. Set METRICS_PYTHON_DJANGO_VIEW_DUPLICATE_QUERY_COUNT_ENABLED=true (or ..._CELERY_... for tasks) on the application to populate this panel."
     },
     {
       "collapsed": false,
@@ -1081,7 +1082,8 @@
         }
       ],
       "title": "Average number of duplicate DB queries executed by Celery task",
-      "type": "timeseries"
+      "type": "timeseries",
+      "description": "Disabled by default from metrics-python 0.5.0, it walks the stack on every query. Set METRICS_PYTHON_DJANGO_VIEW_DUPLICATE_QUERY_COUNT_ENABLED=true (or ..._CELERY_... for tasks) on the application to populate this panel."
     },
     {
       "collapsed": false,

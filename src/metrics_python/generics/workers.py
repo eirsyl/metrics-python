@@ -1,14 +1,11 @@
-from prometheus_client import Gauge
+from ..config import gauge
 
-from ..constants import NAMESPACE
-
-WORKERS_BY_STATE = Gauge(
+WORKERS_BY_STATE = gauge(
     "workers_by_state",
     "Number of workers by state (busy or idle) and worker type "
     "(gunicorn, celery, etc.)",
     ["worker_type", "state"],
     multiprocess_mode="livesum",
-    namespace=NAMESPACE,
     subsystem="generics_workers",
 )
 

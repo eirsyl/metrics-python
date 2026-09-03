@@ -1,32 +1,25 @@
-from prometheus_client import Histogram, Summary
+from ..config import histogram, summary
 
-from ..buckets import buckets_for
-from ..constants import NAMESPACE
-
-REQUEST_DURATION = Histogram(
+REQUEST_DURATION = histogram(
     "request_duration",
     "Time spent on processing a request in the ASGI server",
     ["status", "method"],
     unit="seconds",
-    buckets=buckets_for("asgi_request_duration"),
-    namespace=NAMESPACE,
     subsystem="asgi",
 )
 
-REQUEST_SIZE = Summary(
+REQUEST_SIZE = summary(
     "request_size",
     "HTTP request size in bytes.",
     ["status", "method"],
     unit="bytes",
-    namespace=NAMESPACE,
     subsystem="asgi",
 )
 
-RESPONSE_SIZE = Summary(
+RESPONSE_SIZE = summary(
     "response_size",
     "HTTP response size in bytes.",
     ["status", "method"],
     unit="bytes",
-    namespace=NAMESPACE,
     subsystem="asgi",
 )

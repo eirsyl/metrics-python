@@ -24,6 +24,18 @@ def run(counter: QueryCounter, sql: str, alias: str = "default") -> None:
     counter(execute, sql, None, False, context(alias))
 
 
+@pytest.fixture(autouse=True)
+def count_duplicates(monkeypatch: pytest.MonkeyPatch) -> None:
+    """
+    Duplicate counting is disabled by default, it walks the stack for every
+    query. These tests are about that behaviour, so they turn it on.
+    """
+
+    monkeypatch.setenv(
+        "METRICS_PYTHON_DJANGO_VIEW_DUPLICATE_QUERY_COUNT_ENABLED", "true"
+    )
+
+
 def test_same_sql_from_the_same_stack_is_a_duplicate() -> None:
     counter = QueryCounter()
 
@@ -100,10 +112,15 @@ def test_query_and_duration_counts_are_tracked_per_alias() -> None:
     assert counter.get_total_query_duration_seconds() >= 0.0
 
 
-def test_nothing_is_recorded_when_observation_is_disabled(
-    settings: Any,
+def test_nothing_is_recorded_when_the_metrics_are_disabled(
+    monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    settings.METRICS_PYTHON_OBSERVE_DUPLICATE_QUERIES = False
+    monkeypatch.setenv(
+        "METRICS_PYTHON_DJANGO_VIEW_DUPLICATE_QUERY_COUNT_ENABLED", "false"
+    )
+    monkeypatch.setenv(
+        "METRICS_PYTHON_DJANGO_CELERY_DUPLICATE_QUERY_COUNT_ENABLED", "false"
+    )
 
     counter = QueryCounter()
 
@@ -116,13 +133,15 @@ def test_nothing_is_recorded_when_observation_is_disabled(
     assert counter.get_total_query_count() == 3
 
 
-def test_stacks_are_only_captured_when_printing(settings: Any) -> None:
+def test_stacks_are_only_captured_when_printing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
     """
     Keeping the frames is only needed to format them, and holding stacks for
     every distinct query in a request is not free.
     """
 
-    settings.METRICS_PYTHON_PRINT_DUPLICATE_QUERIES = False
+    monkeypatch.setenv("METRICS_PYTHON_PRINT_DUPLICATE_QUERIES", "false")
 
     counter = QueryCounter()
     run(counter, "SELECT 1")
@@ -133,9 +152,9 @@ def test_stacks_are_only_captured_when_printing(settings: Any) -> None:
 
 
 def test_printing_duplicates_reports_them(
-    settings: Any, capsys: pytest.CaptureFixture[str]
+    monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    settings.METRICS_PYTHON_PRINT_DUPLICATE_QUERIES = True
+    monkeypatch.setenv("METRICS_PYTHON_PRINT_DUPLICATE_QUERIES", "true")
 
     counter = QueryCounter()
 

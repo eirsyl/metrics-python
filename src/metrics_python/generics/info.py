@@ -1,25 +1,21 @@
-from prometheus_client import Gauge, Info
-
 from metrics_python import __version__
 
-from ..constants import NAMESPACE
+from ..config import gauge, info
 
-APPLICATION_INFO = Info(
+APPLICATION_INFO = info(
     "application",
     "Information about the running target from metrics-python",
-    namespace=NAMESPACE,
     subsystem="generics_info",
 )
 
 # We keep a separate Gauge with the application version. This is
 # needed since the Info() metric is not supported when the application
 # runs in multiprocess mode.
-APPLICATION_VERSION = Gauge(
+APPLICATION_VERSION = gauge(
     "application_version",
     "Information about the current running version of the application.",
     ["application_version", "metrics_python_version"],
     multiprocess_mode="livemostrecent",
-    namespace=NAMESPACE,
     subsystem="generics_info",
 )
 

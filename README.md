@@ -85,48 +85,72 @@ directory.
 
 ## Configuration
 
-### Django settings
+Everything is configured with environment variables. Metrics are created when
+the module defining them is imported, and the documented setup calls
+`patch_caching()` and `setup_celery_metrics()` from inside `settings.py`, so
+Django settings are not available yet at that point.
 
-The Django integration reads two settings. Both are optional.
+A variable starting with `METRICS_PYTHON_` that is not recognised is reported
+with a warning at startup. A misspelled flag would otherwise silently do
+nothing, which is the worst outcome for a switch meant to keep costs down.
 
-| Setting | Default | Effect |
-| --- | --- | --- |
-| `METRICS_PYTHON_OBSERVE_DUPLICATE_QUERIES` | `True` | Count duplicate queries on `metrics_python_django_view_duplicate_query_count_total` and `metrics_python_django_celery_duplicate_query_count_total`. |
-| `METRICS_PYTHON_PRINT_DUPLICATE_QUERIES` | `False` | Print duplicate queries and the stack that produced them to stdout. Intended for local debugging, and has no effect unless the setting above is also on. |
+### Enabling and disabling metrics
 
-Duplicate query detection walks the stack on every query and compares it against
-every stack already seen in the same request, so it is not free. Turn
-`METRICS_PYTHON_OBSERVE_DUPLICATE_QUERIES` off if you do not use the duplicate
-query metrics:
+Each metric has a flag, named after the exported metric without the
+`metrics_python` prefix and without the unit suffix. So
+`metrics_python_django_signal_duration_seconds` is:
 
-```python
-METRICS_PYTHON_OBSERVE_DUPLICATE_QUERIES = False
+```sh
+METRICS_PYTHON_DJANGO_SIGNAL_DURATION_ENABLED=false
 ```
+
+A disabled metric is never registered, so it costs nothing, and the work needed
+to produce its value is skipped rather than thrown away.
+
+These four are **disabled by default**, because nothing we could find reads them
+and they are not free to produce:
+
+| Metric | Why |
+| --- | --- |
+| `graphql_lifecycle_step_duration` | Times every parse, validation and resolver. |
+| `celery_task_last_execution` | A `mostrecent` gauge, awkward in multiprocess mode. |
+| `django_view_duplicate_query_count` | Walks the stack on every query. |
+| `django_celery_duplicate_query_count` | Walks the stack on every query. |
+
+Turn one on when you need it:
+
+```sh
+METRICS_PYTHON_DJANGO_VIEW_DUPLICATE_QUERY_COUNT_ENABLED=true
+```
+
+Before disabling a metric, check what reads it. A dashboard panel goes blank,
+but a recording rule that selects the metric will keep evaluating and produce a
+wrong result, which is easy to miss when it feeds an SLO.
+
+### Duplicate queries
+
+Duplicate query detection reports queries that were executed more than once from
+the same place in the code. It is off by default, see the table above.
+
+Set `METRICS_PYTHON_PRINT_DUPLICATE_QUERIES=true` to also print each duplicate
+and the stack that produced it to stdout. That implies counting them, so one
+variable is enough when debugging locally.
 
 ### Histogram buckets
 
-Every histogram uses the prometheus-client default buckets. They can be tuned
-per metric with environment variables, which is the main lever on how many time
-series the library produces: a histogram costs one series per bucket per label
-combination, plus `_sum` and `_count`.
-
-The variable name is the exported metric name without the `metrics_python`
-prefix and without the unit suffix, upper cased. So
-`metrics_python_django_middleware_duration_seconds` is configured with:
+Every histogram uses the prometheus-client default buckets. Buckets are the
+main lever on how many time series the library produces: a histogram costs one
+series per bucket per label combination, plus `_sum` and `_count`.
 
 ```sh
-METRICS_PYTHON_BUCKETS_DJANGO_MIDDLEWARE_DURATION="0.001,0.005,0.025,0.1"
+METRICS_PYTHON_DJANGO_MIDDLEWARE_DURATION_BUCKETS="0.001,0.005,0.025,0.1"
 ```
 
-`METRICS_PYTHON_BUCKETS_DEFAULT` applies to every histogram that has no metric
-specific override. The value is a comma separated list of increasing upper
-bounds in the metric's unit; the `+Inf` bucket is added automatically. A value
-that cannot be parsed is ignored with a warning, so a typo does not stop the
-application from starting.
-
-Buckets are resolved when the metric is created, which happens at import time.
-Environment variables are therefore the only supported configuration, Django
-settings are not available yet at that point.
+`METRICS_PYTHON_DEFAULT_BUCKETS` applies to every histogram without its own
+override. The value is a comma separated list of increasing upper bounds in the
+metric's unit; the `+Inf` bucket is added automatically. A value that cannot be
+parsed is ignored with a warning, so a typo does not stop the application from
+starting.
 
 Two things to keep in mind before changing buckets:
 
@@ -134,9 +158,8 @@ Two things to keep in mind before changing buckets:
   aggregates a histogram by summing over `le`, and replicas that disagree
   produce a histogram that cannot be aggregated.
 - **Dashboards and recording rules select individual `le` values.** Removing a
-  bucket that a query pins makes that query return nothing, which is easy to
-  miss when the query feeds an SLO. Check what is selecting the metric before
-  narrowing its buckets.
+  bucket that a query pins makes that query return nothing. Check what is
+  selecting the metric before narrowing its buckets.
 
 ## ASGI
 
@@ -221,8 +244,8 @@ MIDDLEWARE = [
 ]
 ```
 
-Duplicate query detection is on by default and adds work to every query, see
-[Django settings](#django-settings) for how to turn it off.
+Duplicate query detection is off by default, it walks the stack on every
+query, see [Duplicate queries](#duplicate-queries) for how to turn it on.
 
 ### Query count and duration in Celery tasks
 
