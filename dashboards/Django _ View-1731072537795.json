@@ -322,7 +322,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1e-9
+          "le": 1e-09
         },
         "legend": {
           "show": true
@@ -404,7 +404,7 @@
           "color": "rgba(255,0,255,0.7)"
         },
         "filterValues": {
-          "le": 1e-9
+          "le": 1e-09
         },
         "legend": {
           "show": true
@@ -945,7 +945,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(metrics_python_django_combined_size_bytes_sum{cluster=\"prod\"}[$__rate_interval])) by (method, view)\n/\nsum(rate(metrics_python_django_combined_size_bytes_count{cluster=\"prod\"}[$__rate_interval])) by (method, view)",
+          "expr": "(\n  (\n    sum(rate(metrics_python_django_request_size_bytes_sum{cluster=\"prod\"}[$__rate_interval])) by (method, view)\n    or\n    sum(rate(metrics_python_django_response_size_bytes_sum{cluster=\"prod\"}[$__rate_interval])) by (method, view) * 0\n  )\n  +\n  sum(rate(metrics_python_django_response_size_bytes_sum{cluster=\"prod\"}[$__rate_interval])) by (method, view)\n)\n/\nsum(rate(metrics_python_django_response_size_bytes_count{cluster=\"prod\"}[$__rate_interval])) by (method, view)",
           "instant": false,
           "legendFormat": "{{method}} {{view}}",
           "range": true,

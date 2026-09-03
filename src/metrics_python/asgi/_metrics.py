@@ -28,12 +28,3 @@ RESPONSE_SIZE = Summary(
     namespace=NAMESPACE,
     subsystem="asgi",
 )
-
-COMBINED_SIZE = Summary(
-    "combined_size",
-    "HTTP request and response size combined in bytes.",
-    ["status", "method"],
-    unit="bytes",
-    namespace=NAMESPACE,
-    subsystem="asgi",
-)

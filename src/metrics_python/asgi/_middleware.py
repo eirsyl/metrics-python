@@ -9,7 +9,7 @@ from starlette.types import Message, Receive, Scope, Send
 from metrics_python.generics.http import sanitize_http_method
 from metrics_python.generics.workers import WORKERS_BY_STATE
 
-from ._metrics import COMBINED_SIZE, REQUEST_DURATION, REQUEST_SIZE, RESPONSE_SIZE
+from ._metrics import REQUEST_DURATION, REQUEST_SIZE, RESPONSE_SIZE
 
 
 class ASGIMiddleware:
@@ -91,9 +91,6 @@ def observe(
 
     REQUEST_SIZE.labels(status=status, method=method).observe(request_size)
     RESPONSE_SIZE.labels(status=status, method=method).observe(response_size)
-    COMBINED_SIZE.labels(status=status, method=method).observe(
-        request_size + response_size
-    )
 
     REQUEST_DURATION.labels(status=status, method=method).observe(
         duration_without_streaming

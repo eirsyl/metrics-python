@@ -33,15 +33,6 @@ RESPONSE_SIZE = Summary(
     subsystem="django",
 )
 
-COMBINED_SIZE = Summary(
-    "combined_size",
-    "HTTP request and response size combined in bytes.",
-    ["status", "view", "method"],
-    unit="bytes",
-    namespace=NAMESPACE,
-    subsystem="django",
-)
-
 
 #
 # Cache
