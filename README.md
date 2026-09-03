@@ -269,9 +269,14 @@ To setup Gunicorn monitoring, add the Prometheus logger (to measure request
 durations) and add the worker state signals to the gunicorn config.
 
 ```python
+from typing import Any
+
+from prometheus_client import multiprocess
+
 from metrics_python.generics.workers import export_worker_busy_state
 
 logger_class = "metrics_python.gunicorn.Prometheus"
+
 
 def pre_request(worker: Any, req: Any) -> None:
     export_worker_busy_state(worker_type="gunicorn", busy=True)
@@ -283,7 +288,27 @@ def post_request(worker: Any, req: Any, environ: Any, resp: Any) -> None:
 
 def post_fork(server: Any, worker: Any) -> None:
     export_worker_busy_state(worker_type="gunicorn", busy=False)
+
+
+def child_exit(server: Any, worker: Any) -> None:
+    multiprocess.mark_process_dead(worker.pid)
 ```
+
+### Worker cleanup in multiprocess mode
+
+`child_exit` only matters when running with `PROMETHEUS_MULTIPROC_DIR`. The
+worker state gauge uses the `livesum` multiprocess mode, and prometheus-client
+has no way to tell that a process has gone: `mark_process_dead` removing the
+worker's file is what makes it stop counting. Without the hook a worker that
+exits leaves its last busy or idle value behind, and the gauge counts workers
+that no longer exist.
+
+This only shows up when workers are replaced while the application is running,
+for example with `--max-requests`. If your workers live as long as the process,
+nothing accumulates and the gauge is correct either way.
+
+`child_exit` runs in the master process after a worker exits, which is the hook
+prometheus-client documents for this.
 
 ## Release new version
 
