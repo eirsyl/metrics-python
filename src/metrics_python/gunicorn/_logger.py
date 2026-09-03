@@ -1,4 +1,3 @@
-import os
 from datetime import timedelta
 from typing import Any
 
@@ -73,11 +72,9 @@ class Prometheus(Logger):  # type: ignore
         if isinstance(status, str):
             status = int(status.split(None, 1)[0])
 
-        worker_pid = os.getpid()
-
         duration_in_seconds = request_time.total_seconds()
         method = sanitize_http_method(req.method)
 
-        REQUEST_DURATION.labels(
-            status=status, method=method, worker_pid=worker_pid
-        ).observe(duration_in_seconds)
+        REQUEST_DURATION.labels(status=status, method=method).observe(
+            duration_in_seconds
+        )
