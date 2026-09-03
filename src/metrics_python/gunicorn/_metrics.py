@@ -1,5 +1,6 @@
 from prometheus_client import Counter, Gauge, Histogram
 
+from ..buckets import buckets_for
 from ..constants import NAMESPACE
 
 REQUEST_DURATION = Histogram(
@@ -7,6 +8,7 @@ REQUEST_DURATION = Histogram(
     "Time spent on processing a request in Gunicorn",
     ["status", "method", "worker_pid"],
     unit="seconds",
+    buckets=buckets_for("gunicorn_request_duration"),
     namespace=NAMESPACE,
     subsystem="gunicorn",
 )

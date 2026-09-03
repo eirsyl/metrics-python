@@ -1,5 +1,6 @@
 from prometheus_client import Counter, Histogram, Summary
 
+from ..buckets import buckets_for
 from ..constants import NAMESPACE
 
 #
@@ -11,6 +12,7 @@ REQUEST_DURATION = Histogram(
     "Time spent on processing a request in the ASGI server",
     ["status", "view", "method"],
     unit="seconds",
+    buckets=buckets_for("django_request_duration"),
     namespace=NAMESPACE,
     subsystem="django",
 )
@@ -43,6 +45,7 @@ CACHE_CALL_DURATION = Histogram(
     "Cache call duration by method and alias.",
     ["alias", "method"],
     unit="seconds",
+    buckets=buckets_for("django_cache_call_duration"),
     namespace=NAMESPACE,
     subsystem="django",
 )
@@ -52,6 +55,7 @@ CACHE_CALL_GETS_DURATION = Histogram(
     "Cache call duration for get requests by cache hit, alias and method.",
     ["alias", "method", "hit"],
     unit="seconds",
+    buckets=buckets_for("django_cache_call_gets_duration"),
     namespace=NAMESPACE,
     subsystem="django",
 )
@@ -75,6 +79,7 @@ VIEW_QUERY_DURATION = Histogram(
     "Database query duration by views.",
     ["db", "method", "view", "status"],
     unit="seconds",
+    buckets=buckets_for("django_view_query_duration"),
     namespace=NAMESPACE,
     subsystem="django",
 )
@@ -115,6 +120,7 @@ CELERY_QUERY_DURATION = Histogram(
     "Database query duration by celery tasks.",
     ["db", "task"],
     unit="seconds",
+    buckets=buckets_for("django_celery_query_duration"),
     namespace=NAMESPACE,
     subsystem="django",
 )
@@ -144,6 +150,7 @@ DATABASE_GET_NEW_CONNECTION_HISTOGRAM = Histogram(
     documentation="Time it takes to get a new connection to Postgres.",
     labelnames=["database_host", "database_port", "database_name", "database_username"],
     unit="seconds",
+    buckets=buckets_for("django_database_get_new_connection_duration"),
     namespace=NAMESPACE,
     subsystem="django",
 )
@@ -153,6 +160,7 @@ DATABASE_INIT_CONNECTION_STATE_HISTOGRAM = Histogram(
     documentation="Time it takes to initialize the connection state.",
     labelnames=["database_host", "database_port", "database_name", "database_username"],
     unit="seconds",
+    buckets=buckets_for("django_database_init_connection_state_duration"),
     namespace=NAMESPACE,
     subsystem="django",
 )
@@ -167,6 +175,7 @@ SIGNAL_DURATION = Histogram(
     "Time spent on signals.",
     ["signal"],
     unit="seconds",
+    buckets=buckets_for("django_signal_duration"),
     namespace=NAMESPACE,
     subsystem="django",
 )
@@ -181,6 +190,7 @@ MIDDLEWARE_DURATION = Histogram(
     "Time spent on middleware methods.",
     ["middleware", "method"],
     unit="seconds",
+    buckets=buckets_for("django_middleware_duration"),
     namespace=NAMESPACE,
     subsystem="django",
 )

@@ -1,5 +1,6 @@
 from prometheus_client import Counter, Gauge, Histogram
 
+from ..buckets import buckets_for
 from ..constants import NAMESPACE
 
 TASK_PUBLISHED = Counter(
@@ -15,6 +16,7 @@ TASK_APPLY_DURATION = Histogram(
     "Time spent applying the task",
     ["task"],
     unit="seconds",
+    buckets=buckets_for("celery_task_apply_duration"),
     namespace=NAMESPACE,
     subsystem="celery",
 )
@@ -24,6 +26,7 @@ TASK_EXECUTION_DELAY = Histogram(
     "Time spent in the messaging queue before a worker starts executing a task",
     ["task", "queue"],
     unit="seconds",
+    buckets=buckets_for("celery_task_execution_delay"),
     namespace=NAMESPACE,
     subsystem="celery",
 )
@@ -33,6 +36,7 @@ TASK_EXECUTION_DURATION = Histogram(
     "Time spent executing the task",
     ["task", "queue", "state"],
     unit="seconds",
+    buckets=buckets_for("celery_task_execution_duration"),
     namespace=NAMESPACE,
     subsystem="celery",
 )

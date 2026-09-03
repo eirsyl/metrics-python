@@ -30,6 +30,61 @@ from metrics_python.generics.info import expose_application_info
 expose_application_info(version="your-application-version")
 ```
 
+## Configuration
+
+### Django settings
+
+The Django integration reads two settings. Both are optional.
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| `METRICS_PYTHON_OBSERVE_DUPLICATE_QUERIES` | `True` | Count duplicate queries on `metrics_python_django_view_duplicate_query_count_total` and `metrics_python_django_celery_duplicate_query_count_total`. |
+| `METRICS_PYTHON_PRINT_DUPLICATE_QUERIES` | `False` | Print duplicate queries and the stack that produced them to stdout. Intended for local debugging, and has no effect unless the setting above is also on. |
+
+Duplicate query detection walks the stack on every query and compares it against
+every stack already seen in the same request, so it is not free. Turn
+`METRICS_PYTHON_OBSERVE_DUPLICATE_QUERIES` off if you do not use the duplicate
+query metrics:
+
+```python
+METRICS_PYTHON_OBSERVE_DUPLICATE_QUERIES = False
+```
+
+### Histogram buckets
+
+Every histogram uses the prometheus-client default buckets. They can be tuned
+per metric with environment variables, which is the main lever on how many time
+series the library produces: a histogram costs one series per bucket per label
+combination, plus `_sum` and `_count`.
+
+The variable name is the exported metric name without the `metrics_python`
+prefix and without the unit suffix, upper cased. So
+`metrics_python_django_middleware_duration_seconds` is configured with:
+
+```sh
+METRICS_PYTHON_BUCKETS_DJANGO_MIDDLEWARE_DURATION="0.001,0.005,0.025,0.1"
+```
+
+`METRICS_PYTHON_BUCKETS_DEFAULT` applies to every histogram that has no metric
+specific override. The value is a comma separated list of increasing upper
+bounds in the metric's unit; the `+Inf` bucket is added automatically. A value
+that cannot be parsed is ignored with a warning, so a typo does not stop the
+application from starting.
+
+Buckets are resolved when the metric is created, which happens at import time.
+Environment variables are therefore the only supported configuration, Django
+settings are not available yet at that point.
+
+Two things to keep in mind before changing buckets:
+
+- **Every replica of a deployment has to resolve the same buckets.** Prometheus
+  aggregates a histogram by summing over `le`, and replicas that disagree
+  produce a histogram that cannot be aggregated.
+- **Dashboards and recording rules select individual `le` values.** Removing a
+  bucket that a query pins makes that query return nothing, which is easy to
+  miss when the query feeds an SLO. Check what is selecting the metric before
+  narrowing its buckets.
+
 ## ASGI
 
 metrics-python contains an ASGI middleware to measure request/response durations and sizes.
@@ -113,6 +168,9 @@ MIDDLEWARE = [
 ]
 ```
 
+Duplicate query detection is on by default and adds work to every query, see
+[Django settings](#django-settings) for how to turn it off.
+
 ### Query count and duration in Celery tasks
 
 Database metrics can also be observed in Celery. Execute
@@ -127,9 +185,9 @@ setup_celery_database_metrics()
 
 ### Postgres database connection metrics
 
-The `get_new_connection` method in the PostgreSQL database connection
-engine can be observed by using a custom connection engine from
-metrics-python.
+The `get_new_connection` and `init_connection_state` methods in the PostgreSQL
+database connection engine can be observed by using a custom connection engine
+from metrics-python.
 
 ```python
 DATABASES = {

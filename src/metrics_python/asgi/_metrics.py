@@ -1,5 +1,6 @@
 from prometheus_client import Histogram, Summary
 
+from ..buckets import buckets_for
 from ..constants import NAMESPACE
 
 REQUEST_DURATION = Histogram(
@@ -7,6 +8,7 @@ REQUEST_DURATION = Histogram(
     "Time spent on processing a request in the ASGI server",
     ["status", "method"],
     unit="seconds",
+    buckets=buckets_for("asgi_request_duration"),
     namespace=NAMESPACE,
     subsystem="asgi",
 )
