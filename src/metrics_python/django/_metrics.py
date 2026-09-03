@@ -143,6 +143,7 @@ DATABASE_GET_NEW_CONNECTION_HISTOGRAM = Histogram(
     "database_get_new_connection_duration",
     documentation="Time it takes to get a new connection to Postgres.",
     labelnames=["database_host", "database_port", "database_name", "database_username"],
+    unit="seconds",
     namespace=NAMESPACE,
     subsystem="django",
 )
@@ -151,6 +152,7 @@ DATABASE_INIT_CONNECTION_STATE_HISTOGRAM = Histogram(
     "database_init_connection_state_duration",
     documentation="Time it takes to initialize the connection state.",
     labelnames=["database_host", "database_port", "database_name", "database_username"],
+    unit="seconds",
     namespace=NAMESPACE,
     subsystem="django",
 )

@@ -1184,7 +1184,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "histogram_quantile($percentile, sum(rate(metrics_python_django_database_get_new_connection_duration_bucket{cluster=~\"$cluster\", app=~\"$app\", fulfillment_center=~\"$fulfillment_center\", tenant=~\"$tenant\", component=~\"$component\", role=~\"$role\"}[$__rate_interval])) by (le, database_host, database_port))",
+          "expr": "histogram_quantile($percentile,\n  sum(rate(metrics_python_django_database_get_new_connection_duration_seconds_bucket{cluster=~\"$cluster\", app=~\"$app\", fulfillment_center=~\"$fulfillment_center\", tenant=~\"$tenant\", component=~\"$component\", role=~\"$role\"}[$__rate_interval])) by (le, database_host, database_port)\n  or\n  sum(rate(metrics_python_django_database_get_new_connection_duration_bucket{cluster=~\"$cluster\", app=~\"$app\", fulfillment_center=~\"$fulfillment_center\", tenant=~\"$tenant\", component=~\"$component\", role=~\"$role\"}[$__rate_interval])) by (le, database_host, database_port)\n)",
           "instant": false,
           "legendFormat": "{{database_host}}:{{database_port}}",
           "range": true,
@@ -1281,7 +1281,7 @@
             "uid": "${DS_PROMETHEUS}"
           },
           "editorMode": "code",
-          "expr": "sum(rate(metrics_python_django_database_get_new_connection_duration_count{cluster=~\"$cluster\", app=~\"$app\", fulfillment_center=~\"$fulfillment_center\", tenant=~\"$tenant\", component=~\"$component\", role=~\"$role\"}[$__rate_interval])) by (database_host, database_port)",
+          "expr": "sum(rate(metrics_python_django_database_get_new_connection_duration_seconds_count{cluster=~\"$cluster\", app=~\"$app\", fulfillment_center=~\"$fulfillment_center\", tenant=~\"$tenant\", component=~\"$component\", role=~\"$role\"}[$__rate_interval])) by (database_host, database_port)\nor\nsum(rate(metrics_python_django_database_get_new_connection_duration_count{cluster=~\"$cluster\", app=~\"$app\", fulfillment_center=~\"$fulfillment_center\", tenant=~\"$tenant\", component=~\"$component\", role=~\"$role\"}[$__rate_interval])) by (database_host, database_port)",
           "instant": false,
           "legendFormat": "{{database_host}}:{{database_port}}",
           "range": true,
