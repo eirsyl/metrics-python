@@ -30,6 +30,59 @@ from metrics_python.generics.info import expose_application_info
 expose_application_info(version="your-application-version")
 ```
 
+## Exposing metrics
+
+metrics-python can serve a Prometheus endpoint from a background thread.
+
+```python
+from metrics_python.prometheus import start_prometheus_background_server
+
+start_prometheus_background_server()
+```
+
+| Environment variable | Default | Effect |
+| --- | --- | --- |
+| `PROMETHEUS_ENABLED` | `false` | Nothing is served unless this is true. |
+| `PROMETHEUS_METRICS_PORT` | `8001` | Port to listen on. The `port` argument takes precedence. |
+| `PROMETHEUS_MULTIPROC_DIR` | unset | Directory prometheus-client writes its per process files to. Required for multiprocess mode. |
+
+### Multiprocess mode
+
+Applications that fork, which both gunicorn and celery do, have to run
+prometheus-client in multiprocess mode. Every process writes its own files into
+`PROMETHEUS_MULTIPROC_DIR`, and the endpoint merges them when scraped. Without
+it each worker keeps its own counters and a scrape returns whichever worker
+happened to answer.
+
+Point `PROMETHEUS_MULTIPROC_DIR` at a writable directory and pass
+`multiprocess=True`:
+
+```python
+start_prometheus_background_server(multiprocess=True)
+```
+
+Files left behind by a previous run are removed on startup, they would
+otherwise be merged into the exposition.
+
+Three metrics depend on multiprocess mode being set up correctly:
+
+| Metric | Mode |
+| --- | --- |
+| `generics_workers_workers_by_state` | `livesum` |
+| `generics_info_application_version` | `livemostrecent` |
+| `celery_task_last_execution` | `mostrecent` |
+
+The `live` modes stop counting a process once its file has been removed, which
+is what `mark_process_dead` does. See the Gunicorn section for where to call it.
+
+`expose_application_info` also writes the `application_version` gauge for this
+reason: the `Info` metric it populates is not supported in multiprocess mode.
+
+The `collectors` argument registers extra collectors on the same registry. They
+must not use the regular metric classes, prometheus-client would then export
+each value twice, once from the collector and once from the multiprocess
+directory.
+
 ## Configuration
 
 ### Django settings
@@ -271,9 +324,8 @@ durations) and add the worker state signals to the gunicorn config.
 ```python
 from typing import Any
 
-from prometheus_client import multiprocess
-
 from metrics_python.generics.workers import export_worker_busy_state
+from metrics_python.prometheus import mark_process_dead
 
 logger_class = "metrics_python.gunicorn.Prometheus"
 
@@ -291,17 +343,19 @@ def post_fork(server: Any, worker: Any) -> None:
 
 
 def child_exit(server: Any, worker: Any) -> None:
-    multiprocess.mark_process_dead(worker.pid)
+    mark_process_dead(worker.pid)
 ```
 
 ### Worker cleanup in multiprocess mode
 
-`child_exit` only matters when running with `PROMETHEUS_MULTIPROC_DIR`. The
-worker state gauge uses the `livesum` multiprocess mode, and prometheus-client
-has no way to tell that a process has gone: `mark_process_dead` removing the
-worker's file is what makes it stop counting. Without the hook a worker that
-exits leaves its last busy or idle value behind, and the gauge counts workers
-that no longer exist.
+`child_exit` only matters when running in [multiprocess mode](#multiprocess-mode).
+The worker state gauge uses `livesum`, and prometheus-client has no way to tell
+that a process has gone: `mark_process_dead` removing the worker's file is what
+makes it stop counting. Without the hook a worker that exits leaves its last
+busy or idle value behind, and the gauge counts workers that no longer exist.
+
+The `mark_process_dead` from metrics-python does nothing when
+`PROMETHEUS_MULTIPROC_DIR` is unset, so the hook is safe to add either way.
 
 This only shows up when workers are replaced while the application is running,
 for example with `--max-requests`. If your workers live as long as the process,
